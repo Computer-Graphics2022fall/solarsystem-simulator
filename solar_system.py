@@ -364,9 +364,9 @@ def display():
             
     if is_collide:  # 충돌이 일어날 때 효과 나타남
         print("collid")
-        particleburst = collision.ParticleBurst(collide_x, collide_y, 0.1, 0.1)
+        particledebris = collision.ParticleDebris(collide_x, collide_y, 0.1, 0.1)
         if(explodeCount < 40):
-            collision.particleList.append(particleburst)    # 입자 리스트에 폭발 시작 지점 입자 추가
+            collision.particleList.append(particledebris)    # 입자 리스트에 폭발 시작 지점 입자 추가
         
         collid = collision.ParticleSystem() # ParticleSystem은 현재 Particle 클래스가 담겨있는 시스템을 나타내는 클래스입니다
         collid.update()     # 입자 state 업데이트
