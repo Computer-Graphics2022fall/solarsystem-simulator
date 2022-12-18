@@ -8,8 +8,10 @@ import collision
 
 ###Global variable declaration###
 is_collide = False
-explodeCount=  0
+shooting_star = False
+explodeCount =  0
 collide_x, collide_y = -90, 30  # 충돌이 일어나는 지점 좌표; 효과가 시작되는 점 좌표
+shooting_x, shooting_y = -90, -90
 ###---------------------------###
 
 mat_emi_sun = [1.0, 0.1, 0.0, 0.0]
@@ -284,29 +286,21 @@ def check_crash(new_center_x, new_center_y, new_center_z, planet_coor):
         return False
     
 def display():
-    global LookAt_viewrPos_x
-    global LookAt_viewrPos_z
-    global LookAt_viewrDir_x
-    global LookAt_viewrDir_z
-    global Add_viewrPos_x
-    global Add_viewrPos_z
-    global Add_viewrDir_x
-    global Add_viewrDir_z
+    global LookAt_viewrPos_x, LookAt_viewrPos_z
+    global LookAt_viewrDir_x, LookAt_viewrDir_z
+    global Add_viewrPos_x, Add_viewrPos_z
+    global Add_viewrDir_x, Add_viewrDir_z
     global revolutionEarth_y
     global rotationEarth_y
-    global angle_x
-    global angle_y
-    global new_center_x
-    global new_center_y 
-    global new_center_z
-    global new_center_x_des
-    global new_center_y_des
-    global new_center_z_des
+    global angle_x, angle_y
+    global new_center_x, new_center_y, new_center_z
+    global new_center_x_des, new_center_y_des, new_center_z_des
     global exist_new
     global explodeCount
     global is_collide
-    global collide_x
-    global collide_y
+    global shooting_star
+    global collide_x, collide_y
+    global shooting_x, shooting_y
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glColor3f(0.8, 0.5, 0.8)
@@ -364,17 +358,41 @@ def display():
             
     if is_collide:  # 충돌이 일어날 때 효과 나타남
         print("collid")
-        particledebris = collision.ParticleDebris(collide_x, collide_y, 0.1, 0.1)
+        collision.collide_or_sstar(0)
+        collision.change_explodeCount(10)
+        collision.change_maxAge(60)
+        particledebris = collision.ParticleDebris(collide_x, collide_y, 0.1, 0.1, 0.0, 0.0)
         if(explodeCount < 40):
             collision.particleList.append(particledebris)    # 입자 리스트에 폭발 시작 지점 입자 추가
         
-        collid = collision.ParticleSystem() # ParticleSystem은 현재 Particle 클래스가 담겨있는 시스템을 나타내는 클래스입니다
+        collid = collision.ParticleSystem()
         collid.update()     # 입자 state 업데이트
         explodeCount += 1   
 
         if explodeCount >= 100:
             is_collide = False
+            explodeCount = 0            
+
+    if shooting_star:
+        print("Shooting star!")
+        collision.collide_or_sstar(1)
+        collision.change_explodeCount(60)
+        collision.change_maxAge(30)
+        particledebris = collision.ParticleDebris(shooting_x, shooting_y, 0.2, 0.2, 0.1, 0.1)
+        if(explodeCount < 200):
+            collision.particleList.append(particledebris)    # 입자 리스트에 폭발 시작 지점 입자 추가
+        
+        collid = collision.ParticleSystem()
+        collid.update()     # 입자 state 업데이트
+        explodeCount += 1   
+        shooting_x += 1
+        shooting_y += 1
+
+        if explodeCount >= 200:
+            shooting_star = False
             explodeCount = 0
+            shooting_x, shooting_y = -90, -90
+
     glutSwapBuffers()
 
 
@@ -410,6 +428,7 @@ def keyboard(key, x, y):
     global new_center_z_des
     global speed
     global is_collide
+    global shooting_star
     
     if key == b'd':
         angle_x = 0
@@ -426,6 +445,9 @@ def keyboard(key, x, y):
     
     if key == b' ':
         is_collide = True
+
+    if key == b's':
+        shooting_star = True
 
 
 def mouse(button, state, x, y):

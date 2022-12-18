@@ -1,24 +1,20 @@
 # ref: https://github.com/bronzelion/fireworks_simulator
 # global declaration
 
-gravity           =   9.8
-dragFactor        =   10
-windX             =   0.01
-windY             =   0.01
-maxAge            =   60	# 입자 나이. 줄어들수록 작고 빠르게 터지는것처럼 보이고 늘어날수록 크고 느리게 터지는것처럼 보임
-launchSpeed       =   10
-launchVariation   =   50
-launchIterval     =   30
+accelerate        =   1.5
+windX             =   0.0
+windY             =   0.0
+maxAge            =   60
 explosionSpeed    =   2
 explosionVariation=   5
 explodeCount      =   10
-originalColor     =   [1.0,1.0,1.0,1.0]
+originalColor     =   [1.0,1.0,0.0,1.0]
 originalSize      =   1
 particleSize      =   1
-initPosX          =   0	# 현재 스페이스 바 누르면 두 군데에서 폭발이 일어날텐데, 그 중 사용자기준 오른쪽에 있는 폭발. 아마 초기값으로 설정된 것 같네요
+initPosX          =   0
 initPosY          =   0
+collide_sstar     =   True
 
-#!/usr/bin/python
 import random
 import math
 
@@ -35,17 +31,40 @@ def getRandomColor():
 			color.insert(0,random.random())	
 		return color
 
+def getFlameColor():
+		color = [1.0, 0.0, 0.0, 1.0]
+		for i in range(3):
+			color[1] = random.random()
+		return color
+
+def collide_or_sstar(type):
+	global collide_sstar
+	if type == 0:	# Collision
+		collide_sstar = True
+	else:			# Shooting star
+		collide_sstar = False
+
+def change_explodeCount(num):
+	global explodeCount
+	explodeCount = num
+
+def change_maxAge(num):
+	global maxAge
+	maxAge = num
+
 # list for all particles in the system
 particleList = []
 
 
 class Particle(object):
 	'''Main Particle class, contains all attributes for a particle'''
-	def __init__(self,x,y,vx,vy,color,size):
+	def __init__(self,x,y,vx,vy,ax,ay,color,size):
 		self.x = x			#Position
 		self.y = y		
 		self.vx = vx		#velocity in *-direction
 		self.vy = vy
+		self.ax = ax
+		self.ay = ay
 
 		self.age= 0			#Current age of the particle
 		self.max_age=maxAge	#Maximum age of the particle
@@ -57,8 +76,8 @@ class Particle(object):
 
 	def update(self,dx=0.05,dy=0.05):
 		#print("updating particle in list")
-		self.vx += dx	# update dx, dy
-		self.vy += dy
+		self.vx += dx - self.ax*accelerate	# update dx, dy
+		self.vy += dy - self.ay*accelerate
 
 		self.x += self.vx	# update x, y
 		self.y += self.vy
@@ -88,16 +107,19 @@ class Particle(object):
 		self.color[3]= 1.0 - float(self.age)/float(self.max_age)	# 시간이 지날수록 색이 점점 어두워집니다
 
 class ParticleDebris(Particle):	
-	def __init__(self,x,y,vx,vy):
+	def __init__(self,x,y,vx,vy,ax,ay):
 		#print("initializing particle burst")
 		color = originalColor
 		size = originalSize		
-		Particle.__init__(self,x,y,vx,vy,color,size)
+		Particle.__init__(self,x,y,vx,vy,ax,ay,color,size)
 
 	def explode(self):	# IMPORTANT
 		#pick random burst color
 		global explodeCount
-		color = getRandomColor()	
+		if collide_sstar:
+			color = getRandomColor()	
+		else:
+			color = getFlameColor()
 		explodeCount = explodeCount	# 40, 한번 폭발 시 그려지는 입자 개수
 
 		for i in range(explodeCount):
@@ -108,7 +130,7 @@ class ParticleDebris(Particle):
 			x  = self.x + vx
 			y  = self.y + vy
 			# Create Fireworks particles
-			obj = Particle(x,y,vx,vy,color,particleSize)	# 해당 입자 클라스 생성
+			obj = Particle(x,y,vx,vy,self.ax,self.ay,color,particleSize)	# 해당 입자 클라스 생성
 			particleList.append(obj)						# 입자 리스트에 입자 클라스 append
 
 	def check_particle_age(self):
