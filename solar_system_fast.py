@@ -157,8 +157,8 @@ def drawPlanet():
         glPushMatrix() #금성
         trace(2.85, revol_Earth * (1/0.61), 42)
         glRotatef(revol_Earth * (1/0.61), 0, 1, 0) 
-        glTranslatef(42, 0, 0) #B x cnrdmfh 30
-        glRotatef(rotate_Earth, 0, 1, 0) #B 자전 7.0
+        glTranslatef(42, 0, 0)
+        glRotatef(rotate_Earth, 0, 1, 0)
         planet_center[2] = planet_center[2] @ translation(42, 0, 0) @ rotation(revol_Earth) 
         #texture1 = load_texture("venusmap_low.jpg")
         gluSphere(planet, 2.85, 20, 20)
@@ -169,7 +169,7 @@ def drawPlanet():
         glPushMatrix() #지구
         trace(3, revol_Earth, 60)
         glRotatef(revol_Earth, 0, 1, 0) 
-        glTranslatef(60, 0, 0) #x 축으로
+        glTranslatef(60, 0, 0) 
         glPushMatrix() #지구
         glRotatef(rotate_Earth, 0, 1, 0) 
         planet_center[3] = planet_center[3] @ translation(60, 0, 0) @ rotation(revol_Earth) 
@@ -264,8 +264,6 @@ def create_planet(new_center_x, new_center_y, new_center_z):
     glTranslatef(new_center_x, new_center_y, new_center_z)
     #texture1 = load_texture("newmap.jpg")
     gluSphere(planet, 5, 20, 20)
-    #print(new_center_x)
-    #print(new_center_y)
     gluDeleteQuadric(planet)
     glPopMatrix()
     
@@ -301,9 +299,6 @@ def display():
     glColor3f(0.8, 0.5, 0.8)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    
-    #background
-    #stars()
 
     #방향키를 움직이면 카메라의 위치와 방향을 바뀜
     Look_x += plus_x*5
@@ -319,8 +314,6 @@ def display():
     plus_vec_z = 0
     
     glScalef(2, 2, 2)
-    
-    #background
     
     #마우스 수평이동: 태양 y축 기준으로 회전
     glRotatef(angle_x, 0, 1, 0)
@@ -349,7 +342,6 @@ def display():
             collide_x, collide_y = (new_center_x + planet_center[planet][0])/2, (new_center_y + planet_center[planet][1])/2
             planet_exist[planet] = False
             exist_new = False
-            #print("planet_exist: ", planet_exist[planet])
             
     if is_collide:  # 충돌이 일어날 때 효과 나타남
         print("collid")
@@ -451,11 +443,6 @@ def keyboard(key, x, y):
 
 
 def mouse(button, state, x, y):
-    #print("button: ", button)
-    #print("state: ", state)
-    #print("state: ", state)
-    #global button_
-    #global state_
     global mouse_init_x
     global mouse_init_y
     global new_center_x
@@ -463,30 +450,15 @@ def mouse(button, state, x, y):
         
     mouse_init_x = x     
     mouse_init_y = y 
-    #button_ = button
-    #state_ = state
-    '''
-    if (button_ == 2 and state_ == 0):
-        new_center_x = 1/400*mouse_init_x - 1 
-        new_center_y = -1/400*mouse_init_y + 1
-    print("cew: ", new_center_x)
-    print(mouse_init_x)
-    '''
 
 def motion(x, y):
-    #global button_
-    #global state_
     global angle_x
     global angle_y
     global mouse_init_x
     global mouse_init_y
-        
-        
-    #if (button_ == 0 and state_ == 0):
     angle_x += (x - mouse_init_x) * 0.1
     angle_y += (mouse_init_y - y) * 0.1
-        #mouse_init_x = x     
-        #mouse_init_y = y 
+
 
 if __name__ == "__main__":
     plus_x = 0
