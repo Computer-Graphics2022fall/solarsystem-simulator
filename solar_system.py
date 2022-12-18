@@ -16,8 +16,6 @@ shooting_x, shooting_y = -90, -90
 rx, ry                 = 1, 1
 ###---------------------------###
 
-mat_emi_sun = [1.0, 0.1, 0.0, 0.0]
-
 #texture mapping 
 def load_texture(texture_url):
     img = Image.open(texture_url)
@@ -37,30 +35,28 @@ def load_texture(texture_url):
     
 
 def reshape(w, h):
-    ratio = w / h
     glViewport(0, 0, w, h)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-
-    gluPerspective(45, ratio, 0.1, 3000) #시야각, 가로 종횡비, 최소, 최대거리
+    gluPerspective(45, w / h, 0.1, 3000) #시야각, 가로 종횡비, 최소, 최대거리
 
 def stars():
-    global LookAt_viewrPos_x
-    global LookAt_viewrPos_z
-    global LookAt_viewrDir_x
-    global LookAt_viewrDir_z
-    global Add_viewrPos_x
-    global Add_viewrPos_z
-    global Add_viewrDir_x
-    global Add_viewrDir_z
+    global Look_x
+    global Look_z
+    global Look_vec_x
+    global Look_vec_z
+    global plus_x
+    global plus_z
+    global plus_vec_x
+    global plus_vec_z
     
     glPushMatrix()
-    LookAt_viewrPos_x += Add_viewrPos_x / 10000
-    LookAt_viewrDir_x += Add_viewrDir_x / 10000
-    LookAt_viewrPos_z += Add_viewrPos_z / 10000
-    LookAt_viewrDir_z += Add_viewrDir_z / 10000
-    gluLookAt(LookAt_viewrPos_x, LookAt_viewrPos_y, LookAt_viewrPos_z,
-            LookAt_viewrDir_x, LookAt_viewrDir_y, LookAt_viewrDir_z,
+    Look_x += plus_x / 10000
+    Look_vec_x += plus_vec_x / 10000
+    Look_z += plus_z / 10000
+    Look_vec_z += plus_vec_z / 10000
+    gluLookAt(Look_x, Look_y, Look_z,
+            Look_vec_x, Look_vec_y, Look_vec_z,
             0, 1, 0)
     
     glRotatef(angle_x/80, 0, 1, 0)
@@ -69,18 +65,18 @@ def stars():
     glDisable(GL_DEPTH_TEST)
     glEnable(GL_CULL_FACE)
     glCullFace(GL_FRONT)
-    #texture1 = load_texture("starmap.jpg")
+    texture1 = load_texture("starmap.jpg")
     star = gluNewQuadric()
     gluQuadricTexture(star, GL_TRUE)
     glEnable(GL_TEXTURE_2D)
-    #glBindTexture(GL_TEXTURE_2D, texture1)
+    glBindTexture(GL_TEXTURE_2D, texture1)
     gluSphere(star, 800, 20, 20)
     gluDeleteQuadric(star)
 
-    LookAt_viewrPos_x -= Add_viewrPos_x / 10000
-    LookAt_viewrDir_x -= Add_viewrDir_x / 10000
-    LookAt_viewrPos_z -= Add_viewrPos_z / 10000
-    LookAt_viewrDir_z -= Add_viewrDir_z / 10000
+    Look_x -= plus_x / 10000
+    Look_vec_x -= plus_vec_x / 10000
+    Look_z -= plus_z / 10000
+    Look_vec_z -= plus_vec_z / 10000
     glPopMatrix()
     
 def trace(radius, rotate, translate):
@@ -132,76 +128,64 @@ def drawPlanet():
     
     if planet_exist[0]:
         glPushMatrix() #태양
-        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emi_sun)
-        glRotatef(revolutionEarth_y, 0, 1, 0)
+        glRotatef(revol_Earth, 0, 1, 0)
         glTranslatef(0, 0, 0)
-        glRotatef(revolutionEarth_y, 0, 1, 0) 
-        planet_center[0] = planet_center[0] @ translation(0, 0, 0) @ rotation(revolutionEarth_y) 
-        #texture1 = load_texture("sunmap_low.jpg")
-        #glBindTexture(GL_TEXTURE_2D, texture1)
+        glRotatef(revol_Earth, 0, 1, 0) 
+        planet_center[0] = planet_center[0] @ translation(0, 0, 0) @ rotation(revol_Earth) 
+        texture1 = load_texture("sunmap_low.jpg")
+        glBindTexture(GL_TEXTURE_2D, texture1)
         gluSphere(planet, 12, 20, 20)
         glPopMatrix()    
+    
     
     if planet_exist[1]:
         glPushMatrix() #수성
         #자취
-        trace(1.14, revolutionEarth_y, 24)
+        trace(1.14, revol_Earth, 24)
         #수성
-        glRotatef(revolutionEarth_y, 0, 1, 0)
+        glRotatef(revol_Earth, 0, 1, 0)
         glTranslatef(24, 0, 0)
-        glRotatef(rotationEarth_y, 0, 1, 0)   
-        planet_center[1] = planet_center[1] @ translation(24, 0, 0) @ rotation(revolutionEarth_y) 
-        #texture1 = load_texture("mercurymap_low.jpg")
-        #glBindTexture(GL_TEXTURE_2D, texture1)
+        glRotatef(rotate_Earth, 0, 1, 0)   
+        planet_center[1] = planet_center[1] @ translation(24, 0, 0) @ rotation(revol_Earth) 
+        texture1 = load_texture("mercurymap_low.jpg")
+        glBindTexture(GL_TEXTURE_2D, texture1)
         gluSphere(planet, 1.14, 20, 20)
         glPopMatrix()
-    '''
-    glPushMatrix()
-    glColor3f(1.0,0.0,0.0)
-    glBegin(GL_LINES)
-    glVertex3f(list(planet_center[1])[0],list(planet_center[1])[1],list(planet_center[1])[2])
-    glVertex3f(list(planet_center[1])[0]+100,list(planet_center[1])[1]+100,list(planet_center[1])[2]+100)
-    glEnd()
-    glColor3f(1,1.0,1.0)
-    glBegin(GL_LINES)
-    glVertex3f(list(planet_center[1])[0],list(planet_center[1])[1],list(planet_center[1])[2])
-    glVertex3f(list(planet_center[1])[0]-100,list(planet_center[1])[1]+100,list(planet_center[1])[2]+100)
-    glEnd()
-    glPopMatrix()
-    '''
+
+
     if planet_exist[2]:
         glPushMatrix() #금성
-        trace(2.85, revolutionEarth_y * (1/0.61), 42)
-        glRotatef(revolutionEarth_y * (1/0.61), 0, 1, 0) 
-        glTranslatef(42, 0, 0) #B x cnrdmfh 30
-        glRotatef(rotationEarth_y, 0, 1, 0) #B 자전 7.0
-        planet_center[2] = planet_center[2] @ translation(42, 0, 0) @ rotation(revolutionEarth_y) 
-        #texture1 = load_texture("venusmap_low.jpg")
+        trace(2.85, revol_Earth * (1/0.61), 42)
+        glRotatef(revol_Earth * (1/0.61), 0, 1, 0) 
+        glTranslatef(42, 0, 0)
+        glRotatef(rotate_Earth, 0, 1, 0)
+        planet_center[2] = planet_center[2] @ translation(42, 0, 0) @ rotation(revol_Earth) 
+        texture1 = load_texture("venusmap_low.jpg")
         gluSphere(planet, 2.85, 20, 20)
         glPopMatrix()
     
     
     if planet_exist[3]:
         glPushMatrix() #지구
-        trace(3, revolutionEarth_y, 60)
-        glRotatef(revolutionEarth_y, 0, 1, 0) 
-        glTranslatef(60, 0, 0) #x 축으로
+        trace(3, revol_Earth, 60)
+        glRotatef(revol_Earth, 0, 1, 0) 
+        glTranslatef(60, 0, 0)
         glPushMatrix() #지구
-        glRotatef(rotationEarth_y, 0, 1, 0) 
-        planet_center[3] = planet_center[3] @ translation(60, 0, 0) @ rotation(revolutionEarth_y) 
-        #texture1 = load_texture("earthmap_low.jpg")
+        glRotatef(rotate_Earth, 0, 1, 0) 
+        planet_center[3] = planet_center[3] @ translation(60, 0, 0) @ rotation(revol_Earth) 
+        texture1 = load_texture("earthmap_low.jpg")
         gluSphere(planet, 3, 20, 20)
         glPopMatrix()
         
         if planet_exist[4]:
             glPushMatrix() #달
-            trace(1, revolutionEarth_y, 5)
-            glRotatef(revolutionEarth_y, 0, 1, 0)
+            trace(1, revol_Earth, 5)
+            glRotatef(revol_Earth, 0, 1, 0)
             glTranslatef(5, 0, 0)
-            glRotatef(rotationEarth_y, 0, 1, 0) 
-            planet_center[4] = planet_center[4] @ translation(5, 0, 0) @ rotation(revolutionEarth_y) 
-            planet_center[4] = planet_center[4] @ translation(60, 0, 0) @ rotation(revolutionEarth_y) 
-            #texture1 = load_texture("moonmap_low.jpg")
+            glRotatef(rotate_Earth, 0, 1, 0) 
+            planet_center[4] = planet_center[4] @ translation(5, 0, 0) @ rotation(revol_Earth) 
+            planet_center[4] = planet_center[4] @ translation(60, 0, 0) @ rotation(revol_Earth) 
+            texture1 = load_texture("moonmap_low.jpg")
             gluSphere(planet, 1, 20, 20)
             glPopMatrix()
         glPopMatrix()
@@ -209,61 +193,61 @@ def drawPlanet():
 
     if planet_exist[5]:
         glPushMatrix() #화성
-        trace(1.59, revolutionEarth_y * (1/1.9), 80)
-        glRotatef(revolutionEarth_y * (1/1.9), 0, 1, 0) 
+        trace(1.59, revol_Earth * (1/1.9), 80)
+        glRotatef(revol_Earth * (1/1.9), 0, 1, 0) 
         glTranslatef(80, 0, 0)
-        glRotatef(rotationEarth_y, 0, 1, 0)
-        planet_center[5] = planet_center[5] @ translation(80, 0, 0) @ rotation(revolutionEarth_y) 
-        #texture1 = load_texture("marsmap_low.jpg")
+        glRotatef(rotate_Earth, 0, 1, 0)
+        planet_center[5] = planet_center[5] @ translation(80, 0, 0) @ rotation(revol_Earth) 
+        texture1 = load_texture("marsmap_low.jpg")
         gluSphere(planet, 1.59, 20, 20)
         glPopMatrix()
 
 
     if planet_exist[6]:
         glPushMatrix() #목성
-        trace(9, revolutionEarth_y * (1 / 29.5), 120)
-        glRotatef(revolutionEarth_y * (1 / 29.5), 0, 1, 0)
+        trace(9, revol_Earth * (1 / 29.5), 120)
+        glRotatef(revol_Earth * (1 / 29.5), 0, 1, 0)
         glTranslatef(120, 0, 0)
-        glRotatef(rotationEarth_y, 0, 1, 0)
-        planet_center[6] = planet_center[6] @ translation(120, 0, 0) @ rotation(revolutionEarth_y) 
-        #texture1 = load_texture("jupitermap_low.jpg")
+        glRotatef(rotate_Earth, 0, 1, 0)
+        planet_center[6] = planet_center[6] @ translation(120, 0, 0) @ rotation(revol_Earth) 
+        texture1 = load_texture("jupitermap_low.jpg")
         gluSphere(planet, 9, 20, 20)
         glPopMatrix()
     
     
     if planet_exist[7]:
         glPushMatrix() #토성
-        trace(7.5, revolutionEarth_y * (1/11.9), 150)
-        glRotatef(revolutionEarth_y * (1/11.9), 0, 1, 0)
+        trace(7.5, revol_Earth * (1/11.9), 150)
+        glRotatef(revol_Earth * (1/11.9), 0, 1, 0)
         glTranslatef(150, 0, 0) 
         glRotatef(27, 1, 0, 0)
-        glRotatef(rotationEarth_y, 0, 1, 0)
-        planet_center[7] = planet_center[7] @ translation(150, 0, 0) @ rotation(revolutionEarth_y) 
-        #texture1 = load_texture("saturnmap_low.jpg")
+        glRotatef(rotate_Earth, 0, 1, 0)
+        planet_center[7] = planet_center[7] @ translation(150, 0, 0) @ rotation(revol_Earth) 
+        texture1 = load_texture("saturnmap_low.jpg")
         gluSphere(planet, 7.5, 20, 20)
         glPopMatrix()
 
             
     if planet_exist[8]:     
         glPushMatrix() #천왕성
-        trace(3.75, revolutionEarth_y * (1 / 1.5), 162)
-        glRotatef(revolutionEarth_y * (1 / 1.5), 0, 1, 0)
+        trace(3.75, revol_Earth * (1 / 1.5), 162)
+        glRotatef(revol_Earth * (1 / 1.5), 0, 1, 0)
         glTranslatef(162, 0, 0)
-        glRotatef(rotationEarth_y, 0, 1, 0)
-        planet_center[8] = planet_center[8] @ translation(162, 0, 0) @ rotation(revolutionEarth_y) 
-        #texture1 = load_texture("neptunemap_low.jpg")
+        glRotatef(rotate_Earth, 0, 1, 0)
+        planet_center[8] = planet_center[8] @ translation(162, 0, 0) @ rotation(revol_Earth) 
+        texture1 = load_texture("neptunemap_low.jpg")
         gluSphere(planet, 3.75, 20, 20)
         glPopMatrix()
             
     
     if planet_exist[9]:
         glPushMatrix() #해왕성
-        trace(3.75, revolutionEarth_y * (1 / 1.2), 180)
-        glRotatef(revolutionEarth_y * (1 / 1.2), 0, 1, 0)
+        trace(3.75, revol_Earth * (1 / 1.2), 180)
+        glRotatef(revol_Earth * (1 / 1.2), 0, 1, 0)
         glTranslatef(180, 0, 0)
-        glRotatef(rotationEarth_y, 0, 1, 0)
-        planet_center[9] = planet_center[9] @ translation(180, 0, 0) @ rotation(revolutionEarth_y) 
-        #texture1 = load_texture("neptunemap_low.jpg")
+        glRotatef(rotate_Earth, 0, 1, 0)
+        planet_center[9] = planet_center[9] @ translation(180, 0, 0) @ rotation(revol_Earth) 
+        texture1 = load_texture("neptunemap_low.jpg")
         gluSphere(planet, 3.75, 20, 20)
         glPopMatrix()
     
@@ -276,12 +260,10 @@ def create_planet(new_center_x, new_center_y, new_center_z):
     planet = gluNewQuadric()
     gluQuadricTexture(planet, GL_TRUE)
     glEnable(GL_TEXTURE_2D)
-    glRotatef(rotationEarth_y + speed, 0, 1, 0)
+    glRotatef(rotate_Earth + speed, 0, 1, 0)
     glTranslatef(new_center_x, new_center_y, new_center_z)
-    #texture1 = load_texture("newmap.jpg")
+    texture1 = load_texture("newmap.jpg")
     gluSphere(planet, 5, 20, 20)
-    #print(new_center_x)
-    #print(new_center_y)
     gluDeleteQuadric(planet)
     glPopMatrix()
     
@@ -296,12 +278,12 @@ def check_crash(new_center_x, new_center_y, new_center_z, planet_coor):
         return False
     
 def display():
-    global LookAt_viewrPos_x, LookAt_viewrPos_z
-    global LookAt_viewrDir_x, LookAt_viewrDir_z
-    global Add_viewrPos_x, Add_viewrPos_z
-    global Add_viewrDir_x, Add_viewrDir_z
-    global revolutionEarth_y
-    global rotationEarth_y
+    global Look_x, Look_z
+    global Look_vec_x, Look_vec_z
+    global plus_x, plus_z
+    global plus_vec_x, plus_vec_z
+    global revol_Earth
+    global rotate_Earth
     global angle_x, angle_y
     global new_center_x, new_center_y, new_center_z
     global new_center_x_des, new_center_y_des, new_center_z_des
@@ -319,32 +301,30 @@ def display():
     glLoadIdentity()
     
     #background
-    #stars()
+    stars()
 
     #방향키를 움직이면 카메라의 위치와 방향을 바뀜
-    LookAt_viewrPos_x += Add_viewrPos_x*5
-    LookAt_viewrDir_x += Add_viewrDir_x*5
-    LookAt_viewrPos_z += Add_viewrPos_z*5
-    LookAt_viewrDir_z += Add_viewrDir_z*5
-    gluLookAt(LookAt_viewrPos_x, LookAt_viewrPos_y, LookAt_viewrPos_z,
-            LookAt_viewrDir_x, LookAt_viewrDir_y, LookAt_viewrDir_z,
+    Look_x += plus_x*5
+    Look_vec_x += plus_vec_x*5
+    Look_z += plus_z*5
+    Look_vec_z += plus_vec_z*5
+    gluLookAt(Look_x, Look_y, Look_z,
+            Look_vec_x, Look_vec_y, Look_vec_z,
             0, -1, 0)
-    Add_viewrPos_x = 0
-    Add_viewrPos_z = 0
-    Add_viewrDir_x = 0
-    Add_viewrDir_z = 0
+    plus_x = 0
+    plus_z = 0
+    plus_vec_x = 0
+    plus_vec_z = 0
     
     glScalef(2, 2, 2)
-    
-    #background
     
     #마우스 수평이동: 태양 y축 기준으로 회전
     glRotatef(angle_x, 0, 1, 0)
     #마우스 수직이동: 태양 z축 기준으로 회전
     glRotatef(angle_y, 0, 0, 1)
     
-    revolutionEarth_y += 2 
-    rotationEarth_y += 3
+    revol_Earth += 2 
+    rotate_Earth += 3
     drawPlanet()
     
     x_move = (new_center_x_des - new_center_x)/10
@@ -365,7 +345,6 @@ def display():
             collide_x, collide_y = (new_center_x + planet_center[planet][0])/2, (new_center_y + planet_center[planet][1])/2
             planet_exist[planet] = False
             exist_new = False
-            #print("planet_exist: ", planet_exist[planet])
             
     if is_collide:  # 충돌이 일어날 때 효과 나타남
         print("collid")
@@ -373,6 +352,7 @@ def display():
         collision.change_explodeCount(10)
         collision.change_maxAge(60)
         particledebris = collision.ParticleDebris(collide_x, collide_y, 0.1, 0.1, 0.0, 0.0)
+        
         if(explodeCount < 40):
             collision.particleList.append(particledebris)    # 입자 리스트에 폭발 시작 지점 입자 추가
         
@@ -414,26 +394,26 @@ def display():
 
 
 def spckeycallback(key, x, y):
-    global Add_viewrPos_x
-    global Add_viewrPos_z
-    global Add_viewrDir_x
-    global Add_viewrDir_z
+    global plus_x
+    global plus_z
+    global plus_vec_x
+    global plus_vec_z
 
     if key == 100:
-        Add_viewrPos_x = -10.0
-        Add_viewrDir_x = -10.0
+        plus_x = -10.0
+        plus_vec_x = -10.0
     
     if key == 102: 
-        Add_viewrPos_x = 10.0
-        Add_viewrDir_x = 10.0
+        plus_x = 10.0
+        plus_vec_x = 10.0
     
     if key == 103: #앞쪽이동
-        Add_viewrPos_z = 10.0
-        Add_viewrDir_z = 10.0
+        plus_z = 10.0
+        plus_vec_z = 10.0
     
     if key == 101: #뒤쪽이동
-        Add_viewrPos_z = -10.0
-        Add_viewrDir_z = -10.0
+        plus_z = -10.0
+        plus_vec_z = -10.0
        
        
 def keyboard(key, x, y): 
@@ -467,11 +447,6 @@ def keyboard(key, x, y):
 
 
 def mouse(button, state, x, y):
-    #print("button: ", button)
-    #print("state: ", state)
-    #print("state: ", state)
-    #global button_
-    #global state_
     global mouse_init_x
     global mouse_init_y
     global new_center_x
@@ -479,44 +454,30 @@ def mouse(button, state, x, y):
         
     mouse_init_x = x     
     mouse_init_y = y 
-    #button_ = button
-    #state_ = state
-    '''
-    if (button_ == 2 and state_ == 0):
-        new_center_x = 1/400*mouse_init_x - 1 
-        new_center_y = -1/400*mouse_init_y + 1
-    print("cew: ", new_center_x)
-    print(mouse_init_x)
-    '''
+
 
 def motion(x, y):
-    #global button_
-    #global state_
     global angle_x
     global angle_y
     global mouse_init_x
     global mouse_init_y
-        
-        
-    #if (button_ == 0 and state_ == 0):
     angle_x += (x - mouse_init_x) * 0.1
     angle_y += (mouse_init_y - y) * 0.1
-        #mouse_init_x = x     
-        #mouse_init_y = y 
+
 
 if __name__ == "__main__":
-    Add_viewrPos_x = 0
-    Add_viewrPos_z = 0
-    Add_viewrDir_x = 0
-    Add_viewrDir_z = 0
-    revolutionEarth_y = 1.0 #초기화
-    rotationEarth_y = 7.0
-    LookAt_viewrPos_x = 10
-    LookAt_viewrPos_y = 40
-    LookAt_viewrPos_z = 500
-    LookAt_viewrDir_x = 0
-    LookAt_viewrDir_y = 0.3
-    LookAt_viewrDir_z = 0
+    plus_x = 0
+    plus_z = 0
+    plus_vec_x = 0
+    plus_vec_z = 0
+    revol_Earth = 1.0 #초기화
+    rotate_Earth = 7.0
+    Look_x = 10
+    Look_y = 40
+    Look_z = 500
+    Look_vec_x = 0
+    Look_vec_y = 0.3
+    Look_vec_z = 0
     angle_x = 0
     angle_y = 0
     new_center_x = 500
@@ -545,7 +506,7 @@ if __name__ == "__main__":
     glutSpecialFunc(spckeycallback)
     glutMouseFunc(mouse)
     glutMotionFunc(motion)
-    glutReshapeFunc(reshape) #창의 크기가 변할 때 실행
+    glutReshapeFunc(reshape) 
 
     glutMainLoop()
 
