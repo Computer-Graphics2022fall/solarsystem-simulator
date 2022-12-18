@@ -5,8 +5,6 @@ import math
 
 ###Global variable declaration###
 accelerate        =   1.5
-windX             =   0.0
-windY             =   0.0
 maxAge            =   60
 explodeCount      =   10
 explodeSpeed      =   2                               
@@ -77,7 +75,7 @@ class Particle(object):
 			self.is_dead = False
 		self.color[3]= 1.0 - float(self.age)/float(self.max_age)
 
-	def update(self,dx=0.05,dy=0.05):
+	def update(self,dx=0.00,dy=0.00):
 		#print("updating particle in list")
 		self.vx += dx - self.ax*accelerate	# update dx, dy
 		self.vy += dy - self.ay*accelerate
@@ -147,9 +145,8 @@ class ParticleSystem():
 		for i in range(len(particleList)-1,0,-1): # particle index가 1씩 줄어들 때
 			#print("particle number:", i)
 			p = particleList[i]
-			x = windX
-			y = windY			
-			p.update(x,y)
+		
+			p.update()
 			p.age_check()			
 			if p.is_dead:		
 				#print("particle dead")			
