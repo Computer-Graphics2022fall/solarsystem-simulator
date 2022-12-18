@@ -3,15 +3,17 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from PIL import Image as Image
 import numpy as np
+import random
 import math
 import collision
 
 ###Global variable declaration###
-is_collide = False
-shooting_star = False
-explodeCount =  0
-collide_x, collide_y = -90, 30
+is_collide             = False
+shooting_star          = False
+explodeCount           =  0
+collide_x, collide_y   = -90, 30
 shooting_x, shooting_y = -90, -90
+rx, ry                 = 1, 1
 ###---------------------------###
 
 mat_emi_sun = [1.0, 0.1, 0.0, 0.0]
@@ -94,6 +96,14 @@ def trace(radius, rotate, translate):
         glEnable(GL_TEXTURE_2D)
         glDisable(GL_BLEND)
         glPopMatrix()
+
+def random_track():
+    x = [1, 2, 3, 4, 5, -1, -2, -3, -4, -5]
+    y = [1, 2, 3, 4, 5]
+    num1 = random.randint(0,9)
+    num2 = random.randint(0,4)
+    return x[num1], y[num2]
+
         
 #rotaion y축 기준
 def rotation(angle):
@@ -301,6 +311,7 @@ def display():
     global shooting_star
     global collide_x, collide_y
     global shooting_x, shooting_y
+    global rx, ry
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glColor3f(0.8, 0.5, 0.8)
@@ -378,17 +389,18 @@ def display():
         collision.collide_or_sstar(1)
         collision.change_explodeCount(60)
         collision.change_maxAge(30)
-        particledebris = collision.ParticleDebris(shooting_x, shooting_y, 0.2, 0.2, 0.1, 0.1)
+        particledebris = collision.ParticleDebris(shooting_x, shooting_y, 0.2, 0.2, 0.1*rx, 0.1*ry)
         if(explodeCount < 200):
             collision.particleList.append(particledebris)    # 입자 리스트에 폭발 시작 지점 입자 추가
         
         collid = collision.ParticleSystem()
         collid.update()     # 입자 state 업데이트
         explodeCount += 1   
-        shooting_x += 1
-        shooting_y += 1
+        shooting_x += rx*0.5
+        shooting_y += ry*0.5
 
         if explodeCount >= 200:
+            rx, ry = random_track()
             shooting_star = False
             explodeCount = 0
             shooting_x, shooting_y = -90, -90
