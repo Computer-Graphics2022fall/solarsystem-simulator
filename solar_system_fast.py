@@ -256,7 +256,9 @@ def drawPlanet():
     
 def create_planet(new_center_x, new_center_y, new_center_z):
     global speed
+    #glColor4f(1.0, 1.0, 0.0, 0.0)
     glPushMatrix()
+    #glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, [1.0, 1.0, 0.0, 0.0])
     planet = gluNewQuadric()
     gluQuadricTexture(planet, GL_TRUE)
     glEnable(GL_TEXTURE_2D)
@@ -339,12 +341,13 @@ def display():
     for planet in range(9):
         if check_crash(new_center_x, new_center_y, new_center_z, planet_center[planet]) is not True:
             is_collide = True
+            print("collid")
             collide_x, collide_y = (new_center_x + planet_center[planet][0])/2, (new_center_y + planet_center[planet][1])/2
             planet_exist[planet] = False
             exist_new = False
             
     if is_collide:  # 충돌이 일어날 때 효과 나타남
-        print("collid")
+        #print("collid")
         collision.collide_or_sstar(0)
         collision.change_explodeCount(10)
         collision.change_maxAge(60)
@@ -361,7 +364,7 @@ def display():
             explodeCount = 0            
 
     if shooting_star:
-        print("Shooting star!")
+        #print("Shooting star!")
         collision.collide_or_sstar(1)
         collision.change_explodeCount(60)
         collision.change_maxAge(30)
@@ -439,6 +442,7 @@ def keyboard(key, x, y):
         is_collide = True
 
     if key == b's':
+        print("Shooting star!")
         shooting_star = True
 
 
