@@ -10,7 +10,7 @@ import collision
 is_collide = False
 shooting_star = False
 explodeCount =  0
-collide_x, collide_y = -90, 30  # 충돌이 일어나는 지점 좌표; 효과가 시작되는 점 좌표
+collide_x, collide_y = -90, 30
 shooting_x, shooting_y = -90, -90
 ###---------------------------###
 

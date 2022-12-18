@@ -1,34 +1,33 @@
-# ref: https://github.com/bronzelion/fireworks_simulator
-# global declaration
+from OpenGL.GL import *
+from OpenGL.GLUT import *
+import random
+import math
 
+###Global variable declaration###
 accelerate        =   1.5
 windX             =   0.0
 windY             =   0.0
 maxAge            =   60
-explosionSpeed    =   2
-explosionVariation=   5
 explodeCount      =   10
+explodeSpeed      =   2                               
+explodeAdjust     =   5
 originalColor     =   [1.0,1.0,0.0,1.0]
 originalSize      =   1
 particleSize      =   1
-initPosX          =   0
-initPosY          =   0
+initX             =   0
+initY             =   0
+particleList      =   []
 collide_sstar     =   True
-
-import random
-import math
-
-from OpenGL.GL import *
-from OpenGL.GLUT import *
+###---------------------------###
 
 
 def getRadians(x):
-	return math.pi/180.0 * x
+	return (math.pi/180.0) * x
 
 def getRandomColor():
-		color = [1.0]
+		color = [0.0, 0.0, 0.0, 1.0]
 		for i in range(3):
-			color.insert(0,random.random())	
+			color[i] = random.random()
 		return color
 
 def getFlameColor():
@@ -52,16 +51,12 @@ def change_maxAge(num):
 	global maxAge
 	maxAge = num
 
-# list for all particles in the system
-particleList = []
-
 
 class Particle(object):
-	'''Main Particle class, contains all attributes for a particle'''
 	def __init__(self,x,y,vx,vy,ax,ay,color,size):
-		self.x = x			#Position
+		self.x = x
 		self.y = y		
-		self.vx = vx		#velocity in *-direction
+		self.vx = vx
 		self.vy = vy
 		self.ax = ax
 		self.ay = ay
@@ -74,6 +69,14 @@ class Particle(object):
 		self.color=color	#Color
 		self.is_dead = False	# Check if it is "dead"
 
+	def age_check(self):		
+		self.age +=1 
+		if self.age >= self.max_age:
+			self.is_dead = True
+		else:
+			self.is_dead = False
+		self.color[3]= 1.0 - float(self.age)/float(self.max_age)
+
 	def update(self,dx=0.05,dy=0.05):
 		#print("updating particle in list")
 		self.vx += dx - self.ax*accelerate	# update dx, dy
@@ -81,7 +84,7 @@ class Particle(object):
 
 		self.x += self.vx	# update x, y
 		self.y += self.vy
-		self.check_particle_age()	# update particle age
+		self.age_check()	# update particle age
 
 	def draw(self):
 		#print "x: %s Y: %s" %(self.x,self.y) 
@@ -93,18 +96,8 @@ class Particle(object):
 		glutSolidSphere(self.size,20,20)
 		#glutSolidCube(1.5)
 		glPopMatrix()
-		glutPostRedisplay()	# modify
+		glutPostRedisplay()
 
-	def check_particle_age(self):		
-		self.age +=1 
-		if self.age >= self.max_age:
-			self.is_dead = True
-		else:
-			self.is_dead = False
-
-		#Start ageing
-		# Achieve a linear color falloff(ramp) based on age.
-		self.color[3]= 1.0 - float(self.age)/float(self.max_age)	# 시간이 지날수록 색이 점점 어두워집니다
 
 class ParticleDebris(Particle):	
 	def __init__(self,x,y,vx,vy,ax,ay):
@@ -114,32 +107,28 @@ class ParticleDebris(Particle):
 		Particle.__init__(self,x,y,vx,vy,ax,ay,color,size)
 
 	def explode(self):	# IMPORTANT
-		#pick random burst color
 		global explodeCount
 		if collide_sstar:
 			color = getRandomColor()	
 		else:
 			color = getFlameColor()
-		explodeCount = explodeCount	# 40, 한번 폭발 시 그려지는 입자 개수
 
 		for i in range(explodeCount):
 			angle = getRadians(random.randint(0,360))		# 입자가 나가는 방향 랜덤으로	
-			speed = explosionSpeed * (1 -random.random())	# 입자 퍼지는 속도 랜덤으로
-			vx = math.cos(angle)*speed						# x 방향 속도
+			speed = explodeSpeed * (1 - random.random())	# 입자 퍼지는 속도 랜덤으로
+			vx =  math.cos(angle)*speed						# x 방향 속도
 			vy = -math.sin(angle)*speed						# y 방향 속도
 			x  = self.x + vx
 			y  = self.y + vy
-			# Create Fireworks particles
-			obj = Particle(x,y,vx,vy,self.ax,self.ay,color,particleSize)	# 해당 입자 클라스 생성
-			particleList.append(obj)						# 입자 리스트에 입자 클라스 append
+			p = Particle(x,y,vx,vy,self.ax,self.ay,color,particleSize)	# 해당 입자 클라스 생성
+			particleList.append(p)						# 입자 리스트에 입자 클라스 append
 
-	def check_particle_age(self):
+	def age_check(self):
 		
 		self.age += 1
 
-		temp = int ( 100 * random.random()) + explosionVariation
+		temp = int ( 100 * random.random()) + explodeAdjust
 		#print("check particle age", self.age, temp)
-		
 		if self.age > temp:
 			self.is_dead = True			
 			self.explode()
@@ -147,8 +136,8 @@ class ParticleDebris(Particle):
                                                            
 class ParticleSystem():
 	def __init__(self):		
-		self.x = initPosX
-		self.y = initPosY
+		self.x = initX
+		self.y = initY
 		self.timer = 0
 
 	def update(self):
@@ -161,7 +150,7 @@ class ParticleSystem():
 			x = windX
 			y = windY			
 			p.update(x,y)
-			p.check_particle_age()			
+			p.age_check()			
 			if p.is_dead:		
 				#print("particle dead")			
 				p.color = [0.0,0.0,0.0,0.0]				
