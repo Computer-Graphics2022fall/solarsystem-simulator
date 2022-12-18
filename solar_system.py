@@ -396,10 +396,14 @@ def display():
         collid = collision.ParticleSystem()
         collid.update()     # 입자 state 업데이트
         explodeCount += 1   
-        shooting_x += rx*0.5
-        shooting_y += ry*0.5
+        if rx==ry:
+            shooting_x += rx
+            shooting_y += ry
+        else:
+            shooting_x += rx*0.5
+            shooting_y += ry*0.5
 
-        if explodeCount >= 200:
+        if explodeCount >= 250:
             rx, ry = random_track()
             shooting_star = False
             explodeCount = 0
